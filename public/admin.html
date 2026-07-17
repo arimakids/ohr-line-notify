@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>管理画面 | ORIX HOTELS & RESORTS</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; font-size: 13px; color: #333; background: #f5f5f5; display: flex; flex-direction: column; min-height: 100vh; }
+.top-header { background: #3cb371; height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
+.top-header .logo { color: #fff; font-size: 17px; font-weight: bold; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+.top-header .logo .sub { font-size: 11px; opacity: .8; font-weight: normal; }
+.top-header .header-right { display: flex; align-items: center; gap: 16px; color: rgba(255,255,255,.9); font-size: 12px; }
+.top-header .header-right a { color: rgba(255,255,255,.85); text-decoration: none; }
+.body-wrap { display: flex; flex: 1; }
+.sidebar { width: 200px; background: #2b2b2b; flex-shrink: 0; display: flex; flex-direction: column; min-height: calc(100vh - 44px); }
+.sidebar-section { padding: 14px 0 6px; }
+.sidebar-section-label { font-size: 10px; color: #888; padding: 0 16px 6px; letter-spacing: .5px; text-transform: uppercase; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 9px 16px; cursor: pointer; font-size: 12px; color: #bbb; transition: background .15s, color .15s; border-left: 3px solid transparent; }
+.nav-item:hover { background: #383838; color: #fff; }
+.nav-item.active { background: #383838; color: #fff; border-left-color: #3cb371; }
+.nav-item .icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.main-inner { padding: 24px; flex: 1; }
+.page { display: none; }
+.page.active { display: block; }
+.page-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: #fff; border-radius: 4px; padding: 16px; border: 1px solid #e8e8e8; }
+.stat-label { font-size: 11px; color: #888; margin-bottom: 8px; }
+.stat-value { font-size: 26px; font-weight: bold; color: #333; line-height: 1; }
+.stat-value.green { color: #3cb371; }
+.stat-value.red { color: #e05555; }
+.stat-value.orange { color: #e8941a; }
+.stat-sub { font-size: 11px; color: #aaa; margin-top: 6px; }
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.dash-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; padding: 16px; }
+.dash-card-title { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.dash-card-title .link { font-size: 11px; color: #3cb371; cursor: pointer; font-weight: normal; }
+.dash-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 12px; }
+.dash-row:last-child { border-bottom: none; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot.green { background: #3cb371; }
+.dot.orange { background: #e8941a; }
+.dot.gray { background: #bbb; }
+.dash-row-info { flex: 1; }
+.dash-row-hotel { font-weight: bold; color: #333; }
+.dash-row-detail { color: #999; font-size: 11px; margin-top: 1px; }
+.dash-row-status { font-size: 11px; color: #aaa; white-space: nowrap; }
+.list-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
+.filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-group select, .filter-group input { padding: 6px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px; color: #555; background: #fff; }
+.notify-all-btn { display: inline-flex; align-items: center; gap: 6px; background: #3cb371; color: #fff; border: none; padding: 7px 16px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: bold; transition: background .2s; white-space: nowrap; }
+.notify-all-btn:hover { background: #2ea05f; }
+.table-wrap { background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; overflow: hidden; }
+.list-table { width: 100%; border-collapse: collapse; }
+.list-table th { background: #f8f8f8; padding: 9px 14px; text-align: left; font-size: 11px; color: #888; font-weight: bold; border-bottom: 1px solid #e8e8e8; white-space: nowrap; }
+.list-table td { padding: 11px 14px; border-bottom: 1px solid #f2f2f2; font-size: 12px; vertical-align: middle; }
+.list-table tr:last-child td { border-bottom: none; }
+.list-table tr:hover td { background: #fafafa; }
+.td-hotel { font-weight: bold; color: #333; }
+.td-muted { color: #aaa; font-size: 11px; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 11px; font-weight: bold; }
+.badge-waiting { background: #fff5cc; color: #9a7000; border: 1px solid #f0d060; }
+.badge-notified { background: #e6f4ec; color: #1e7a3e; border: 1px solid #a3d5b3; }
+.notify-btn { display: inline-flex; align-items: center; gap: 4px; background: #3cb371; color: #fff; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: bold; transition: background .2s; white-space: nowrap; }
+.notify-btn:hover { background: #2ea05f; }
+.notify-btn:disabled { background: #ccc; cursor: default; }
+.sent-label { font-size: 11px; color: #bbb; }
+.type-tag { display: inline-block; padding: 2px 7px; border-radius: 2px; font-size: 11px; font-weight: bold; }
+.type-vacancy { background: #e8f4fd; color: #1a6fa8; border: 1px solid #aed4f0; }
+.type-cancel { background: #fde8e8; color: #a82020; border: 1px solid #f0aeae; }
+.type-cart { background: #fef3e2; color: #a86000; border: 1px solid #f0cc88; }
+.sent-badge { display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 11px; background: #e6f4ec; color: #1e7a3e; border: 1px solid #a3d5b3; font-weight: bold; }
+.batch-table { width: 100%; border-collapse: collapse; }
+.batch-table th { background: #f8f8f8; padding: 9px 14px; text-align: left; font-size: 11px; color: #888; font-weight: bold; border-bottom: 2px solid #3cb371; white-space: nowrap; }
+.batch-table td { padding: 14px 14px; border-bottom: 1px solid #f2f2f2; font-size: 12px; vertical-align: middle; }
+.schedule-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.schedule-group select, .schedule-group input[type="number"] { padding: 5px 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px; color: #555; background: #fff; width: auto; }
+.schedule-group input[type="number"] { width: 60px; }
+.schedule-label { font-size: 12px; color: #555; }
+.status-select { padding: 5px 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px; color: #555; background: #fff; }
+.batch-btn { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 3px; font-size: 12px; font-weight: bold; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #555; transition: background .2s; white-space: nowrap; }
+.batch-btn:hover { background: #f5f5f5; }
+.batch-btn.primary { background: #3cb371; color: #fff; border-color: #3cb371; }
+.batch-btn.primary:hover { background: #2ea05f; }
+.batch-meta { font-size: 11px; color: #999; }
+.csv-upload-area { margin-top: 20px; background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; padding: 20px; }
+.csv-upload-title { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 12px; }
+.csv-upload-row { display: flex; align-items: center; gap: 10px; }
+.csv-upload-row input[type="file"] { font-size: 12px; }
+.csv-upload-btn { background: #3cb371; color: #fff; border: none; padding: 7px 16px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: bold; }
+.csv-upload-btn:hover { background: #2ea05f; }
+.csv-note { font-size: 11px; color: #999; margin-top: 8px; }
+.delivery-table { width: 100%; border-collapse: collapse; }
+.delivery-table th { background: #f8f8f8; padding: 9px 14px; text-align: left; font-size: 11px; color: #888; font-weight: bold; border-bottom: 2px solid #3cb371; }
+.delivery-table td { padding: 14px 14px; border-bottom: 1px solid #f2f2f2; font-size: 12px; vertical-align: middle; }
+.delivery-name { font-weight: bold; color: #333; }
+.status-active { color: #e05555; font-weight: bold; }
+.status-stopped { color: #aaa; font-weight: bold; }
+.edit-btn { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 3px; font-size: 12px; font-weight: bold; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #555; }
+.edit-btn:hover { background: #f0f0f0; }
+.edit-row { display: none; background: #f9f9f9; }
+.edit-row td { padding: 12px 14px; }
+.edit-inline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.edit-inline select, .edit-inline input[type="number"] { padding: 5px 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px; color: #555; background: #fff; }
+.edit-inline input[type="number"] { width: 60px; }
+.save-btn { display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 3px; font-size: 12px; font-weight: bold; cursor: pointer; background: #3cb371; color: #fff; border: none; }
+.save-btn:hover { background: #2ea05f; }
+.cancel-edit-btn { display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 3px; font-size: 12px; font-weight: bold; cursor: pointer; background: #fff; color: #555; border: 1px solid #ddd; }
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: #2b2b2b; color: #fff; padding: 10px 22px; border-radius: 3px; font-size: 12px; opacity: 0; transition: opacity .3s; z-index: 9999; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+.toast.show { opacity: 1; }
+.loading { color: #aaa; font-size: 12px; padding: 20px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="top-header">
+  <div class="logo">
+    ORIX HOTELS &amp; RESORTS
+    <span class="sub">— LINE通知管理</span>
+  </div>
+  <div class="header-right">
+    <span>管理者：有馬 様</span>
+    <a href="#">ログアウト</a>
+  </div>
+</div>
+
+<div class="body-wrap">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="nav-item active" data-page="dashboard">
+        <span class="icon">📊</span> ダッシュボード
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">システム</div>
+      <div class="nav-item" data-page="batch">
+        <span class="icon">🔄</span> バッチ管理
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">通知管理</div>
+      <div class="nav-item" data-page="delivery">
+        <span class="icon">⚙️</span> 配信設定
+      </div>
+      <div class="nav-item" data-page="vacancy">
+        <span class="icon">🏨</span> 空室待ちリスト
+      </div>
+      <div class="nav-item" data-page="cancel">
+        <span class="icon">🔔</span> キャンセル待ちリスト
+      </div>
+      <div class="nav-item" data-page="history">
+        <span class="icon">📋</span> 通知履歴
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="main-inner">
+
+      <!-- ダッシュボード -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-title">ダッシュボード</div>
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card"><div class="stat-label">空室待ち登録（合計）</div><div class="stat-value" id="stat-vacancy">—</div><div class="stat-sub" id="stat-vacancy-sub"></div></div>
+          <div class="stat-card"><div class="stat-label">キャンセル待ち登録（合計）</div><div class="stat-value red" id="stat-cancel">—</div><div class="stat-sub" id="stat-cancel-sub"></div></div>
+          <div class="stat-card"><div class="stat-label">今月のLINE通知送信数</div><div class="stat-value green" id="stat-history">—</div><div class="stat-sub">通知履歴より集計</div></div>
+          <div class="stat-card"><div class="stat-label">未送信（要対応）</div><div class="stat-value orange" id="stat-pending">—</div><div class="stat-sub">空室待ち＋キャンセル待ち</div></div>
+        </div>
+        <div class="dash-grid">
+          <div class="dash-card">
+            <div class="dash-card-title">空室待ち <span class="link" onclick="goPage('vacancy')">すべて見る →</span></div>
+            <div id="dash-vacancy"><div class="loading">読み込み中...</div></div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-title">キャンセル待ち <span class="link" onclick="goPage('cancel')">すべて見る →</span></div>
+            <div id="dash-cancel"><div class="loading">読み込み中...</div></div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-title">最近の通知履歴</div>
+            <div id="dash-history"><div class="loading">読み込み中...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空室待ちリスト -->
+      <div class="page" id="page-vacancy">
+        <div class="page-title">空室待ちリスト</div>
+        <div class="list-toolbar">
+          <div class="filter-group">
+            <select id="vacancy-hotel-filter"><option value="">全ホテル</option></select>
+            <select id="vacancy-status-filter" onchange="loadVacancy()">
+              <option value="">全ステータス</option>
+              <option value="waiting">未通知</option>
+              <option value="notified">通知済</option>
+            </select>
+          </div>
+          <button class="notify-all-btn" onclick="notifyAll('vacancy')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 5.92 2 10.8c0 2.94 1.6 5.55 4.1 7.24-.18.65-.65 2.35-.74 2.72-.12.44.16.44.34.32.14-.09 2.23-1.5 3.13-2.12.38.05.77.08 1.17.08 5.52 0 10-3.92 10-8.8S17.52 2 12 2z"/></svg>
+            一括LINE通知
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table class="list-table">
+            <thead><tr><th>ホテル</th><th>チェックイン日</th><th>部屋タイプ</th><th>登録者名</th><th>LINE ID</th><th>登録日時</th><th>ステータス</th><th>操作</th></tr></thead>
+            <tbody id="vacancyTableBody"><tr><td colspan="8" class="loading">読み込み中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- キャンセル待ちリスト -->
+      <div class="page" id="page-cancel">
+        <div class="page-title">キャンセル待ちリスト</div>
+        <div class="list-toolbar">
+          <div class="filter-group">
+            <select id="cancel-hotel-filter"><option value="">全ホテル</option></select>
+            <select id="cancel-status-filter" onchange="loadCancel()">
+              <option value="">全ステータス</option>
+              <option value="waiting">未通知</option>
+              <option value="notified">通知済</option>
+            </select>
+          </div>
+          <button class="notify-all-btn" onclick="notifyAll('cancel')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 5.92 2 10.8c0 2.94 1.6 5.55 4.1 7.24-.18.65-.65 2.35-.74 2.72-.12.44.16.44.34.32.14-.09 2.23-1.5 3.13-2.12.38.05.77.08 1.17.08 5.52 0 10-3.92 10-8.8S17.52 2 12 2z"/></svg>
+            一括LINE通知
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table class="list-table">
+            <thead><tr><th>ホテル</th><th>チェックイン日</th><th>部屋タイプ</th><th>登録者名</th><th>LINE ID</th><th>登録日時</th><th>ステータス</th><th>操作</th></tr></thead>
+            <tbody id="cancelTableBody"><tr><td colspan="8" class="loading">読み込み中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 通知履歴 -->
+      <div class="page" id="page-history">
+        <div class="page-title">通知履歴</div>
+        <div class="table-wrap">
+          <table class="list-table">
+            <thead><tr><th>送信日時</th><th>種別</th><th>ホテル</th><th>チェックイン日</th><th>送信先</th><th>ステータス</th></tr></thead>
+            <tbody id="historyTableBody"><tr><td colspan="6" class="loading">読み込み中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- バッチ管理 -->
+      <div class="page" id="page-batch">
+        <div class="page-title">バッチ管理</div>
+        <div class="table-wrap">
+          <table class="batch-table">
+            <thead><tr><th>バッチ名</th><th>スケジュール</th><th>ステータス</th><th>最終開始日時</th><th>最終終了日時</th><th></th><th></th></tr></thead>
+            <tbody id="batchTableBody"><tr><td colspan="7" class="loading">読み込み中...</td></tr></tbody>
+          </table>
+        </div>
+
+        <!-- CSVアップロード -->
+        <div class="csv-upload-area">
+          <div class="csv-upload-title">📂 在庫CSVインポート（TLリンカーン連携）</div>
+          <div class="csv-upload-row">
+            <input type="file" id="csvFile" accept=".csv">
+            <button class="csv-upload-btn" onclick="uploadCSV()">インポート実行</button>
+          </div>
+          <div class="csv-note">
+            CSVフォーマット: hotel_id, hotel_name, room_type, room_type_name, check_in_date, available_rooms, price<br>
+            サンプルファイル: <a href="/data/rooms_sample.csv" download style="color:#3cb371;">rooms_sample.csv</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 配信設定 -->
+      <div class="page" id="page-delivery">
+        <div class="page-title">配信設定</div>
+        <div class="table-wrap">
+          <table class="delivery-table">
+            <thead><tr><th>配信内容</th><th>ステータス</th><th>配信時間</th><th>操作</th></tr></thead>
+            <tbody id="deliveryTableBody"><tr><td colspan="4" class="loading">読み込み中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LINE_ICON = `<svg width="11" height="11" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 5.92 2 10.8c0 2.94 1.6 5.55 4.1 7.24-.18.65-.65 2.35-.74 2.72-.12.44.16.44.34.32.14-.09 2.23-1.5 3.13-2.12.38.05.77.08 1.17.08 5.52 0 10-3.92 10-8.8S17.52 2 12 2z"/></svg>`;
+const API = '';  // 同一オリジンなのでパスだけ
+
+// ===== ページ切替 =====
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  document.querySelector(`[data-page="${name}"]`).classList.add('active');
+  if (name === 'vacancy')  loadVacancy();
+  if (name === 'cancel')   loadCancel();
+  if (name === 'history')  loadHistory();
+  if (name === 'batch')    loadBatch();
+  if (name === 'delivery') loadDelivery();
+}
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', function() { goPage(this.dataset.page); });
+});
+
+// ===== トースト =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ===== ダッシュボード =====
+async function loadDashboard() {
+  const [vList, cList, hList] = await Promise.all([
+    fetch('/api/waitlist/vacancy').then(r => r.json()),
+    fetch('/api/waitlist/cancel').then(r => r.json()),
+    fetch('/api/notify/history?limit=5').then(r => r.json()),
+  ]);
+
+  const vWaiting = vList.filter(d => d.status === 'waiting');
+  const cWaiting = cList.filter(d => d.status === 'waiting');
+  document.getElementById('stat-vacancy').textContent = vList.length;
+  document.getElementById('stat-cancel').textContent = cList.length;
+  document.getElementById('stat-history').textContent = hList.length;
+  document.getElementById('stat-pending').textContent = vWaiting.length + cWaiting.length;
+
+  // 空室待ちカード
+  document.getElementById('dash-vacancy').innerHTML = vList.slice(0,4).map(d => `
+    <div class="dash-row">
+      <div class="dot ${d.status==='waiting'?'orange':'gray'}"></div>
+      <div class="dash-row-info">
+        <div class="dash-row-hotel">${d.hotel_name}</div>
+        <div class="dash-row-detail">${d.check_in_date} — ${d.user_name}</div>
+      </div>
+      <div class="dash-row-status" style="${d.status==='waiting'?'color:#e8941a':''}">
+        ${d.status==='waiting'?'未送信':'送信済'}
+      </div>
+    </div>`).join('') || '<div class="loading">データなし</div>';
+
+  // キャンセル待ちカード
+  document.getElementById('dash-cancel').innerHTML = cList.slice(0,4).map(d => `
+    <div class="dash-row">
+      <div class="dot ${d.status==='waiting'?'orange':'gray'}"></div>
+      <div class="dash-row-info">
+        <div class="dash-row-hotel">${d.hotel_name}</div>
+        <div class="dash-row-detail">${d.check_in_date} — ${d.user_name}</div>
+      </div>
+      <div class="dash-row-status" style="${d.status==='waiting'?'color:#e8941a':''}">
+        ${d.status==='waiting'?'未送信':'送信済'}
+      </div>
+    </div>`).join('') || '<div class="loading">データなし</div>';
+
+  // 履歴カード
+  const typeClass = { '空室待ち':'type-vacancy','キャンセル待ち':'type-cancel','カート落ち':'type-cart' };
+  document.getElementById('dash-history').innerHTML = hList.slice(0,4).map(d => `
+    <div class="dash-row">
+      <div class="dot gray"></div>
+      <div class="dash-row-info">
+        <div class="dash-row-hotel">${d.hotel_name} — ${d.recipient_name}</div>
+        <div class="dash-row-detail">${d.sent_at} <span class="type-tag ${typeClass[d.notify_type]||''}">${d.notify_type}</span></div>
+      </div>
+    </div>`).join('') || '<div class="loading">履歴なし</div>';
+}
+
+// ===== 空室待ちリスト =====
+async function loadVacancy() {
+  const status = document.getElementById('vacancy-status-filter').value;
+  const url = '/api/waitlist/vacancy' + (status ? `?status=${status}` : '');
+  const data = await fetch(url).then(r => r.json());
+  document.getElementById('vacancyTableBody').innerHTML = data.map(d => `
+    <tr>
+      <td class="td-hotel">${d.hotel_name}</td>
+      <td>${d.check_in_date}</td>
+      <td>${d.room_type_name || d.room_type || '—'}</td>
+      <td>${d.user_name}</td>
+      <td class="td-muted">${d.line_id}</td>
+      <td class="td-muted">${d.registered_at}</td>
+      <td><span class="badge ${d.status==='waiting'?'badge-waiting':'badge-notified'}">${d.status==='waiting'?'未通知':'通知済'}</span></td>
+      <td>${d.status==='waiting'
+        ? `<button class="notify-btn" onclick="sendNotify('vacancy',${d.id})">${LINE_ICON} 通知送信</button>`
+        : `<span class="sent-label">送信済</span>`}</td>
+    </tr>`).join('') || '<tr><td colspan="8" class="loading">データなし</td></tr>';
+}
+
+// ===== キャンセル待ちリスト =====
+async function loadCancel() {
+  const status = document.getElementById('cancel-status-filter').value;
+  const url = '/api/waitlist/cancel' + (status ? `?status=${status}` : '');
+  const data = await fetch(url).then(r => r.json());
+  document.getElementById('cancelTableBody').innerHTML = data.map(d => `
+    <tr>
+      <td class="td-hotel">${d.hotel_name}</td>
+      <td>${d.check_in_date}</td>
+      <td>${d.room_type_name || d.room_type || '—'}</td>
+      <td>${d.user_name}</td>
+      <td class="td-muted">${d.line_id}</td>
+      <td class="td-muted">${d.registered_at}</td>
+      <td><span class="badge ${d.status==='waiting'?'badge-waiting':'badge-notified'}">${d.status==='waiting'?'未通知':'通知済'}</span></td>
+      <td>${d.status==='waiting'
+        ? `<button class="notify-btn" onclick="sendNotify('cancel',${d.id})">${LINE_ICON} 通知送信</button>`
+        : `<span class="sent-label">送信済</span>`}</td>
+    </tr>`).join('') || '<tr><td colspan="8" class="loading">データなし</td></tr>';
+}
+
+// ===== 通知送信 =====
+async function sendNotify(type, id) {
+  const res = await fetch('/api/notify/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, id })
+  }).then(r => r.json());
+  showToast('✅ ' + res.message);
+  if (type === 'vacancy') loadVacancy(); else loadCancel();
+  loadDashboard();
+}
+
+async function notifyAll(type) {
+  const res = await fetch('/api/notify/send-all', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type })
+  }).then(r => r.json());
+  showToast('✅ ' + res.message);
+  if (type === 'vacancy') loadVacancy(); else loadCancel();
+  loadDashboard();
+}
+
+// ===== 通知履歴 =====
+async function loadHistory() {
+  const data = await fetch('/api/notify/history').then(r => r.json());
+  const typeClass = { '空室待ち':'type-vacancy','キャンセル待ち':'type-cancel','カート落ち':'type-cart' };
+  document.getElementById('historyTableBody').innerHTML = data.map(d => `
+    <tr>
+      <td class="td-muted">${d.sent_at}</td>
+      <td><span class="type-tag ${typeClass[d.notify_type]||''}">${d.notify_type}</span></td>
+      <td class="td-hotel">${d.hotel_name}</td>
+      <td>${d.check_in_date || '—'}</td>
+      <td>${d.recipient_name}</td>
+      <td><span class="sent-badge">送信済</span></td>
+    </tr>`).join('') || '<tr><td colspan="6" class="loading">履歴なし</td></tr>';
+}
+
+// ===== バッチ管理 =====
+async function loadBatch() {
+  const data = await fetch('/api/batch').then(r => r.json());
+  document.getElementById('batchTableBody').innerHTML = data.map((d, i) => `
+    <tr>
+      <td style="font-weight:bold;color:#333;">${d.name}</td>
+      <td>
+        <div class="schedule-group">
+          <select id="batch-day-${i}" style="width:56px;">
+            ${['*','1','5','10','15','20','25'].map(v=>`<option value="${v}" ${d.schedule_day==v?'selected':''}>${v}</option>`).join('')}
+          </select><span class="schedule-label">日</span>
+          <select id="batch-dow-${i}" style="width:70px;">
+            ${[['*','*'],['mon','月'],['tue','火'],['wed','水'],['thu','木'],['fri','金'],['sat','土'],['sun','日']]
+              .map(([v,l])=>`<option value="${v}" ${d.schedule_dow==v?'selected':''}>${l}</option>`).join('')}
+          </select><span class="schedule-label">曜日</span>
+          <input type="number" id="batch-hour-${i}" value="${d.schedule_hour}" min="0" max="23">
+          <span class="schedule-label">時</span>
+          <input type="number" id="batch-min-${i}" value="${String(d.schedule_min).padStart(2,'0')}" min="0" max="59" style="width:56px;">
+          <span class="schedule-label">分</span>
+        </div>
+      </td>
+      <td>
+        <select class="status-select" id="batch-status-${i}">
+          <option value="standby" ${d.status==='standby'?'selected':''}>待機中</option>
+          <option value="stopped" ${d.status==='stopped'?'selected':''}>停止中</option>
+        </select>
+      </td>
+      <td><span class="batch-meta" id="batch-laststart-${i}">${d.last_start||'—'}</span></td>
+      <td><span class="batch-meta" id="batch-lastend-${i}">${d.last_end||'—'}</span></td>
+      <td><button class="batch-btn" onclick="saveBatch(${d.id},${i})">保存</button></td>
+      <td><button class="batch-btn primary" id="runbtn-${i}" onclick="runBatch(${d.id},${i})">即時実行</button></td>
+    </tr>`).join('');
+}
+
+async function saveBatch(id, i) {
+  await fetch(`/api/batch/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      schedule_day:  document.getElementById(`batch-day-${i}`).value,
+      schedule_dow:  document.getElementById(`batch-dow-${i}`).value,
+      schedule_hour: parseInt(document.getElementById(`batch-hour-${i}`).value),
+      schedule_min:  parseInt(document.getElementById(`batch-min-${i}`).value),
+      status:        document.getElementById(`batch-status-${i}`).value,
+    })
+  });
+  showToast('✅ バッチ設定を保存しました');
+}
+
+async function runBatch(id, i) {
+  const btn = document.getElementById(`runbtn-${i}`);
+  btn.disabled = true; btn.textContent = '実行中...';
+  const res = await fetch(`/api/batch/${id}/run`, { method: 'POST' }).then(r => r.json());
+  document.getElementById(`batch-laststart-${i}`).textContent = res.started_at;
+  showToast('🔄 バッチを実行しました');
+  setTimeout(() => { btn.disabled = false; btn.textContent = '即時実行'; loadBatch(); }, 3000);
+}
+
+// ===== CSVアップロード =====
+async function uploadCSV() {
+  const file = document.getElementById('csvFile').files[0];
+  if (!file) { showToast('CSVファイルを選択してください'); return; }
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch('/api/rooms/import', { method: 'POST', body: form }).then(r => r.json());
+  if (res.success) {
+    showToast(`✅ ${res.imported}件のデータをインポートしました`);
+    loadBatch();
+  } else {
+    showToast('❌ インポートに失敗しました: ' + res.error);
+  }
+}
+
+// ===== 配信設定 =====
+let deliveryData = [];
+
+async function loadDelivery() {
+  deliveryData = await fetch('/api/settings/delivery').then(r => r.json());
+  renderDelivery();
+}
+
+function renderDelivery() {
+  document.getElementById('deliveryTableBody').innerHTML = deliveryData.map((d, i) => `
+    <tr id="delivery-view-${i}">
+      <td class="delivery-name">${d.name}</td>
+      <td><span class="${d.status==='active'?'status-active':'status-stopped'}">${d.status==='active'?'設定中':'停止中'}</span></td>
+      <td>毎日 ${String(d.hour).padStart(2,'0')}時${String(d.minute).padStart(2,'0')}分</td>
+      <td><button class="edit-btn" onclick="openDeliveryEdit(${i})">編集</button></td>
+    </tr>
+    <tr class="edit-row" id="delivery-edit-${i}">
+      <td colspan="4">
+        <div class="edit-inline">
+          <span style="font-weight:bold;min-width:130px;">${d.name}</span>
+          <select id="del-status-${i}">
+            <option value="active" ${d.status==='active'?'selected':''}>設定中</option>
+            <option value="stopped" ${d.status==='stopped'?'selected':''}>停止中</option>
+          </select>
+          <span>毎日</span>
+          <input type="number" id="del-hour-${i}" value="${d.hour}" min="0" max="23">
+          <span>時</span>
+          <input type="number" id="del-min-${i}" value="${d.minute}" min="0" max="59">
+          <span>分</span>
+          <button class="save-btn" onclick="saveDelivery(${d.id},${i})">保存</button>
+          <button class="cancel-edit-btn" onclick="closeDeliveryEdit(${i})">キャンセル</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openDeliveryEdit(i) {
+  document.getElementById(`delivery-edit-${i}`).style.display = 'table-row';
+  document.getElementById(`delivery-view-${i}`).style.opacity = '0.5';
+}
+function closeDeliveryEdit(i) {
+  document.getElementById(`delivery-edit-${i}`).style.display = 'none';
+  document.getElementById(`delivery-view-${i}`).style.opacity = '1';
+}
+async function saveDelivery(id, i) {
+  await fetch(`/api/settings/delivery/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      status: document.getElementById(`del-status-${i}`).value,
+      hour:   parseInt(document.getElementById(`del-hour-${i}`).value),
+      minute: parseInt(document.getElementById(`del-min-${i}`).value),
+    })
+  });
+  showToast('✅ 配信設定を保存しました');
+  await loadDelivery();
+}
+
+// 初期ロード
+loadDashboard();
+</script>
+</body>
+</html>

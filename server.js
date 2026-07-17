@@ -129,17 +129,14 @@ function initDatabase(db) {
     loadSeedRooms(insertRoom);
   }
 
-  // ダミーの待機リストデータ
-  const vCount = db.prepare('SELECT COUNT(*) as c FROM vacancy_waitlist').get().c;
-  if (vCount === 0) loadSeedWaitlist(db);
 }
 
 function loadSeedRooms(insertRoom) {
   const hotels = [
-    { id:'OHR001', name:'FANTIC HOTEL 熱海' },
-    { id:'OHR002', name:'FANTIC HOTEL 箱根' },
-    { id:'OHR003', name:'FANTIC HOTEL 札幌' },
-    { id:'OHR004', name:'FANTIC HOTEL 沖縄' },
+    { id:'FAN001', name:'FANTIC HOTEL 熱海' },
+    { id:'FAN002', name:'FANTIC HOTEL 箱根' },
+    { id:'FAN003', name:'FANTIC HOTEL 札幌' },
+    { id:'FAN004', name:'FANTIC HOTEL 沖縄' },
   ];
   const types = [
     { code:'STD', name:'スタンダードルーム', price:38000 },
@@ -169,21 +166,3 @@ function loadSeedRooms(insertRoom) {
   }
 }
 
-function loadSeedWaitlist(db) {
-  const vIns = db.prepare(`INSERT INTO vacancy_waitlist
-    (hotel_id, hotel_name, room_type, check_in_date, user_name, line_id, registered_at, status)
-    VALUES (?,?,?,?,?,?,?,?)`);
-  vIns.run('OHR001','FANTIC HOTEL 熱海','STD','2027-01-01','田中 花子','@tanaka_h','2026-06-01 10:22','waiting');
-  vIns.run('OHR001','FANTIC HOTEL 熱海','DLX','2027-01-01','山田 太郎','@yamada_t','2026-06-01 11:05','waiting');
-  vIns.run('OHR002','FANTIC HOTEL 箱根','STD','2027-01-02','鈴木 一郎','@suzuki_i','2026-05-30 14:18','notified');
-  vIns.run('OHR002','FANTIC HOTEL 箱根','STD','2027-01-02','佐藤 美咲','@sato_m',  '2026-05-31 09:44','waiting');
-  vIns.run('OHR003','FANTIC HOTEL 札幌','DLX','2027-01-03','伊藤 健司','@ito_k',   '2026-06-02 08:30','waiting');
-
-  const cIns = db.prepare(`INSERT INTO cancel_waitlist
-    (hotel_id, hotel_name, room_type, check_in_date, user_name, line_id, registered_at, status)
-    VALUES (?,?,?,?,?,?,?,?)`);
-  cIns.run('OHR001','FANTIC HOTEL 熱海','STD','2026-07-19','田中 花子','@tanaka_h','2026-06-01 10:22','waiting');
-  cIns.run('OHR001','FANTIC HOTEL 熱海','DLX','2026-07-19','山田 太郎','@yamada_t','2026-06-01 11:05','waiting');
-  cIns.run('OHR002','FANTIC HOTEL 箱根','STD','2026-07-20','鈴木 一郎','@suzuki_i','2026-05-30 14:18','waiting');
-  cIns.run('OHR003','FANTIC HOTEL 札幌','STD','2026-07-19','伊藤 健司','@ito_k',   '2026-06-02 08:30','notified');
-}

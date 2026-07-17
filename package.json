@@ -1,5 +1,5 @@
 {
-  "name": "ohr-line-notify",
+  "name": "fanatic-line-notify",
   "version": "1.0.0",
   "description": "FANTIC HOTELS LINE通知管理システム",
   "main": "server.js",

@@ -185,16 +185,21 @@ const DAYS_JA = ["日","月","火","水","木","金","土"];
 
 // 実際のホテルデータ
 const hotels = [
-  { area:"関東エリア", brand:"佳ら久",   id:"OHR001", name:"熱海・伊豆山 佳ら久" },
-  { area:"関東エリア", brand:"佳ら久",   id:"OHR002", name:"箱根・強羅 佳ら久" },
-  { area:"関東エリア", brand:"はなをり", id:"OHR004", name:"箱根・芦ノ湖 はなをり" },
+  { area:"関東エリア", brand:"佳ら久",        id:"OHR001", name:"熱海・伊豆山 佳ら久" },
+  { area:"関東エリア", brand:"佳ら久",        id:"OHR002", name:"箱根・強羅 佳ら久" },
+  { area:"関東エリア", brand:"はなをり",      id:"OHR004", name:"箱根・芦ノ湖 はなをり" },
   { area:"北海道エリア", brand:"CROSS HOTEL", id:"OHR003", name:"クロスホテル札幌" },
 ];
+
+// 6ヶ月後の日付（受付前ライン）
+const today = new Date(); today.setHours(0,0,0,0);
+const preOpenDate = new Date(today.getFullYear(), today.getMonth() + 6, today.getDate());
 
 let currentStartDate = new Date();
 currentStartDate.setHours(0,0,0,0);
 
-// APIから取得した在庫データ: { "OHR001_2026-07-18": 3, ... }
+// APIから取得した在庫データ: { "OHR001_2026-07-18": 合計空室数 }
+// 値が -1 = 受付前（サーバー側のマーク）
 let roomStock = {};
 
 function addDays(date, n) {
@@ -209,18 +214,29 @@ function formatLabel(date) {
 function buildDates(startDate) {
   return Array.from({length:7}, (_, i) => addDays(startDate, i));
 }
+function isPreOpen(date) {
+  return date >= preOpenDate;
+}
 
 // APIから在庫取得（表示中の7日分）
 async function fetchRooms(dates) {
   try {
     const from = toISODate(dates[0]);
     const to   = toISODate(dates[6]);
-    const res  = await fetch(`/api/rooms?from=${from}&to=${to}`);
+    // ✅ 修正: date_from / date_to
+    const res  = await fetch(`/api/rooms?date_from=${from}&date_to=${to}`);
     const rows = await res.json();
     roomStock = {};
     rows.forEach(r => {
       const key = `${r.hotel_id}_${r.check_in_date}`;
-      roomStock[key] = (roomStock[key] || 0) + r.available_rooms;
+      // ✅ 修正: available_rooms → available
+      if (roomStock[key] === undefined) {
+        roomStock[key] = r.available;
+      } else if (r.available === -1) {
+        roomStock[key] = -1; // 受付前
+      } else {
+        roomStock[key] += r.available;
+      }
     });
   } catch(e) {
     console.warn("API取得エラー", e);
@@ -263,14 +279,22 @@ function buildBody(dates) {
       const key = `${hotel.id}_${dateStr}`;
       const avail = roomStock[key];
 
-      if (avail === undefined) {
-        // APIデータなし（対象外日付）
+      if (isPreOpen(date) || avail === -1) {
+        // 6ヶ月以降 → 受付前
+        td.className = "soldout-cell";
+        td.innerHTML = `
+          <div class="sold-mark" style="color:#bbb;font-size:11px">受付前</div>
+          <button class="line-waitlist-btn" onclick="openModal('${hotel.id}','${hotel.name}','${label}','${dateStr}','preopen')">
+            ${lineIcon}空室待ち
+          </button>`;
+      } else if (avail === undefined) {
+        // APIデータなし
         td.innerHTML = `<span style="color:#ccc">—</span>`;
       } else if (avail > 0) {
         // 空室あり
         td.innerHTML = `<a class="avail-link" href="#">残り${avail}室</a>`;
       } else {
-        // 満室 → 空室待ち / キャンセル待ちボタン
+        // 満室 → キャンセル待ち
         td.className = "soldout-cell";
         td.innerHTML = `
           <div class="sold-mark">✕</div>
@@ -323,12 +347,12 @@ function openModal(hotelId, hotelName, label, dateStr, type) {
   modalDateStr   = dateStr;
   modalType      = type;
 
-  document.getElementById("modalTitle").textContent =
-    type === "vacancy" ? "受付開始を通知する" : "空室待ちに登録する";
+  const titles    = { preopen:"受付開始を通知する", cancel:"キャンセル待ちに登録する", vacancy:"空室待ちに登録する" };
+  const btnLabels = { preopen:"受付開始通知を登録する", cancel:"LINEでキャンセル待ち登録", vacancy:"LINEで空室待ち登録" };
+  document.getElementById("modalTitle").textContent = titles[type] || "空室待ちに登録する";
   document.getElementById("modalDetail").innerHTML =
     `<strong>${hotelName}</strong><br>チェックイン: ${label}`;
-  document.getElementById("modalSubmitText").textContent =
-    type === "vacancy" ? "受付開始通知を登録" : "LINEで空室待ち登録";
+  document.getElementById("modalSubmitText").textContent = btnLabels[type] || "LINEで登録";
 
   // フォームリセット
   document.getElementById("modalName").value = "";
@@ -359,9 +383,10 @@ async function submitWaitlist() {
   btn.disabled = true;
   document.getElementById("modalSubmitText").textContent = "送信中...";
 
-  const endpoint = modalType === "vacancy"
-    ? "/api/waitlist/vacancy"
-    : "/api/waitlist/cancel";
+  // preopen（受付前）と vacancy は両方 vacancy_waitlist へ登録
+  const endpoint = modalType === "cancel"
+    ? "/api/waitlist/cancel"
+    : "/api/waitlist/vacancy";
 
   try {
     const res = await fetch(endpoint, {

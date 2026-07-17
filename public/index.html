@@ -1,380 +1,408 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>空室・キャンセル待ち登録 | ORIX Hotels & Resorts</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>全施設の空室検索 | ORIX Hotels & Resorts</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; font-size: 14px; color: #333; background: #f5f5f5; }
 
-    body {
-      font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
-      background: #f5f5f0;
-      color: #333;
-      min-height: 100vh;
-    }
+  /* Header */
+  .header { background: #1a3a5c; color: #fff; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .header-logo { font-size: 18px; font-weight: bold; letter-spacing: 1px; }
+  .header-logo span { font-size: 11px; display: block; opacity: 0.8; font-weight: normal; }
+  .header-nav { display: flex; gap: 16px; font-size: 12px; }
+  .header-nav a { color: #cde; text-decoration: none; }
+  .header-nav a:hover { color: #fff; }
 
-    header {
-      background: #1a1a1a;
-      color: #fff;
-      padding: 16px 20px;
-      text-align: center;
-    }
-    header h1 {
-      font-size: 14px;
-      font-weight: 400;
-      letter-spacing: 0.1em;
-      opacity: 0.7;
-    }
-    header .brand {
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      margin-top: 4px;
-    }
+  /* Search bar */
+  .search-bar { background: #fff; border-bottom: 2px solid #1a3a5c; padding: 12px 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .search-bar label { font-size: 11px; color: #666; display: block; }
+  .search-bar select, .search-bar input[type=date] { padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+  .search-btn { background: #1a3a5c; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+  .search-btn:hover { background: #2a5a8c; }
 
-    .hero {
-      background: linear-gradient(135deg, #3cb371 0%, #2a8a55 100%);
-      color: #fff;
-      padding: 32px 20px;
-      text-align: center;
-    }
-    .hero h2 {
-      font-size: 22px;
-      font-weight: 600;
-      line-height: 1.5;
-    }
-    .hero p {
-      font-size: 13px;
-      margin-top: 8px;
-      opacity: 0.9;
-      line-height: 1.7;
-    }
+  /* Main */
+  .main { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
+  .page-title { font-size: 20px; font-weight: bold; color: #1a3a5c; margin-bottom: 16px; }
 
-    .tabs {
-      display: flex;
-      background: #fff;
-      border-bottom: 1px solid #e0e0e0;
-    }
-    .tab {
-      flex: 1;
-      padding: 14px 8px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      color: #888;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-    }
-    .tab.active {
-      color: #3cb371;
-      border-bottom-color: #3cb371;
-    }
+  /* Calendar nav */
+  .cal-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .cal-nav button { background: #fff; border: 1px solid #ccc; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+  .cal-nav button:hover { background: #f0f0f0; }
+  .cal-nav .period { font-size: 15px; font-weight: bold; color: #1a3a5c; }
 
-    .container {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 20px 16px 40px;
-    }
+  /* Table */
+  .cal-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+  .cal-table { table-layout: fixed; }
+  .cal-table th { background: #1a3a5c; color: #fff; padding: 10px 6px; text-align: center; font-size: 12px; font-weight: normal; border-right: 1px solid rgba(255,255,255,.2); width: 90px; }
+  .cal-table th.hotel-col { text-align: left; padding-left: 12px; width: 200px; }
+  .cal-table td { overflow: hidden; }
+  .cal-table th.sat { background: #2255a0; }
+  .cal-table th.sun { background: #8b2222; }
+  .cal-table td { border: 1px solid #e8e8e8; text-align: center; padding: 8px 4px; vertical-align: middle; }
+  .cal-table td.hotel-info { text-align: left; padding: 10px 12px; }
+  .cal-table tr:nth-child(even) { background: #fafafa; }
 
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 24px 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
+  /* Hotel info cell */
+  .hotel-area { font-size: 10px; color: #888; }
+  .hotel-brand { font-size: 10px; color: #1a3a5c; font-weight: bold; background: #e8f0fa; display: inline-block; padding: 1px 6px; border-radius: 10px; margin: 2px 0; }
+  .hotel-name { font-size: 13px; font-weight: bold; color: #1a3a5c; }
 
-    .section-title {
-      font-size: 12px;
-      color: #3cb371;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
+  /* Availability cells */
+  .avail-link { display: inline-block; background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold; }
+  .avail-link:hover { background: #c8e6c9; }
 
-    .form-group {
-      margin-bottom: 18px;
-    }
-    label {
-      display: block;
-      font-size: 12px;
-      color: #666;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    label .required {
-      color: #e53e3e;
-      margin-left: 4px;
-    }
-    select, input[type="text"], input[type="date"] {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
-      color: #333;
-      background: #fafafa;
-      appearance: none;
-      -webkit-appearance: none;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    select:focus, input:focus {
-      border-color: #3cb371;
-      background: #fff;
-    }
-    .select-wrapper {
-      position: relative;
-    }
-    .select-wrapper::after {
-      content: '▾';
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #888;
-      pointer-events: none;
-    }
+  /* Sold out cell */
+  .soldout-cell { position: relative; }
+  .sold-mark { color: #999; font-size: 18px; line-height: 1; }
 
-    .notice {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-radius: 8px;
-      padding: 12px 14px;
-      font-size: 12px;
-      color: #166534;
-      line-height: 1.6;
-      margin-bottom: 18px;
-    }
-    .notice strong { display: block; margin-bottom: 4px; }
+  /* LINE waitlist button */
+  .line-waitlist-btn {
+    display: flex; align-items: center; gap: 4px;
+    background: #06C755; color: #fff; border: none; padding: 5px 8px;
+    border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;
+    margin-top: 4px; width: 100%; justify-content: center;
+    text-decoration: none; transition: background .2s;
+  }
+  .line-waitlist-btn:hover { background: #05a848; }
+  .line-waitlist-btn svg { flex-shrink: 0; }
 
-    .btn-submit {
-      width: 100%;
-      padding: 16px;
-      background: #3cb371;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      letter-spacing: 0.05em;
-      transition: background 0.2s;
-    }
-    .btn-submit:hover { background: #2fa362; }
-    .btn-submit:active { background: #26865a; }
-    .btn-submit:disabled { background: #aaa; cursor: not-allowed; }
+  /* Area row */
+  .area-row td { background: #eef3f8; font-size: 12px; font-weight: bold; color: #1a3a5c; padding: 6px 12px; text-align: left; }
 
-    /* 完了画面 */
-    .success-screen {
-      display: none;
-      text-align: center;
-      padding: 40px 20px;
-    }
-    .success-screen .icon {
-      font-size: 56px;
-      margin-bottom: 16px;
-    }
-    .success-screen h3 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #3cb371;
-      margin-bottom: 12px;
-    }
-    .success-screen p {
-      font-size: 14px;
-      color: #555;
-      line-height: 1.7;
-    }
-    .btn-back {
-      display: inline-block;
-      margin-top: 24px;
-      padding: 12px 28px;
-      background: #f0fdf4;
-      color: #3cb371;
-      border: 1px solid #3cb371;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-    }
+  /* Modal overlay */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 12px; padding: 28px 24px; max-width: 380px; width: 90%; }
+  .modal-line-logo { font-size: 36px; margin-bottom: 8px; text-align: center; }
+  .modal h3 { font-size: 17px; font-weight: bold; color: #1a3a5c; margin-bottom: 8px; text-align: center; }
+  .modal .hotel-detail { font-size: 13px; color: #555; margin-bottom: 20px; background: #f5f5f5; padding: 10px; border-radius: 6px; text-align: center; }
 
-    footer {
-      text-align: center;
-      font-size: 11px;
-      color: #aaa;
-      padding: 20px;
-    }
-  </style>
+  /* Modal form */
+  .modal-form-group { margin-bottom: 14px; }
+  .modal-form-group label { display: block; font-size: 11px; color: #666; font-weight: 600; margin-bottom: 5px; }
+  .modal-form-group input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; outline: none; }
+  .modal-form-group input:focus { border-color: #06C755; }
+  .modal-submit-btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; background: #06C755; color: #fff; border: none; border-radius: 8px; padding: 12px; font-size: 15px; font-weight: bold; cursor: pointer; margin-bottom: 10px; transition: background .2s; }
+  .modal-submit-btn:hover { background: #05a848; }
+  .modal-submit-btn:disabled { background: #aaa; cursor: not-allowed; }
+  .modal .cancel-btn { width: 100%; background: none; border: 1px solid #ccc; border-radius: 6px; padding: 8px 20px; cursor: pointer; font-size: 13px; color: #666; }
+  .modal .cancel-btn:hover { background: #f5f5f5; }
+
+  /* Modal success */
+  .modal-success { display: none; text-align: center; padding: 16px 0; }
+  .modal-success .icon { font-size: 48px; margin-bottom: 12px; }
+  .modal-success p { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 16px; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity .3s; z-index: 2000; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+
+  /* Loading */
+  .loading-cell { color: #aaa; font-size: 12px; }
+</style>
 </head>
 <body>
 
-<header>
-  <div class="brand">ORIX Hotels &amp; Resorts</div>
-  <h1>空室・キャンセル待ち 登録フォーム</h1>
-</header>
-
-<div class="hero">
-  <h2>ご希望のお部屋が<br>空いたらLINEでお知らせします</h2>
-  <p>お名前とLINE IDをご登録ください。<br>空室発生時に担当者よりご連絡いたします。</p>
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">
+    ORIX HOTELS &amp; RESORTS
+    <span>公式予約 パイロット版</span>
+  </div>
+  <div class="header-nav">
+    <a href="#">施設一覧</a>
+    <a href="#">全施設の空室検索</a>
+    <a href="admin.html">管理画面</a>
+  </div>
 </div>
 
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('vacancy')">空室待ち</div>
-  <div class="tab" onclick="switchTab('cancel')">キャンセル待ち</div>
+<!-- Search bar -->
+<div class="search-bar">
+  <div>
+    <label>チェックイン日</label>
+    <input type="date" id="checkinInput">
+  </div>
+  <button class="search-btn" onclick="onSearch()">空室を検索</button>
 </div>
 
-<div class="container">
+<!-- Main content -->
+<div class="main">
+  <div class="page-title">全施設の空室検索</div>
 
-  <!-- 登録フォーム -->
-  <div id="formArea">
-    <div class="card">
-      <div class="section-title" id="formTitle">空室待ち 登録</div>
+  <div class="cal-nav">
+    <button onclick="shiftDays(-7)">◀ 前へ</button>
+    <span class="period" id="periodLabel"></span>
+    <button onclick="shiftDays(7)">次へ ▶</button>
+  </div>
 
-      <div class="notice">
-        <strong>📌 ご注意</strong>
-        空室が発生した場合、ご登録のLINEアカウントへご連絡します。ご連絡後24時間以内にご予約の確定をお願いいたします。
+  <table class="cal-table">
+    <thead id="tableHead"></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-line-logo">💚</div>
+    <h3 id="modalTitle">空室待ちに登録する</h3>
+    <div class="hotel-detail" id="modalDetail"></div>
+
+    <!-- 入力フォーム -->
+    <div id="modalFormArea">
+      <div class="modal-form-group">
+        <label>お名前<span style="color:#e53e3e">*</span></label>
+        <input type="text" id="modalName" placeholder="例：山田 太郎">
       </div>
+      <div class="modal-form-group">
+        <label>LINE ID<span style="color:#e53e3e">*</span></label>
+        <input type="text" id="modalLineId" placeholder="例：yamada_taro">
+      </div>
+      <button class="modal-submit-btn" id="modalSubmitBtn" onclick="submitWaitlist()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 5.92 2 10.8c0 2.94 1.6 5.55 4.1 7.24-.18.65-.65 2.35-.74 2.72-.12.44.16.44.34.32.14-.09 2.23-1.5 3.13-2.12.38.05.77.08 1.17.08 5.52 0 10-3.92 10-8.8S17.52 2 12 2z"/></svg>
+        <span id="modalSubmitText">LINEで空室待ち登録</span>
+      </button>
+      <button class="cancel-btn" onclick="closeModal()">キャンセル</button>
+    </div>
 
-      <form id="registerForm" onsubmit="handleSubmit(event)">
-
-        <div class="form-group">
-          <label>ホテル<span class="required">*</span></label>
-          <div class="select-wrapper">
-            <select id="hotel_id" required onchange="updateHotelName()">
-              <option value="">選択してください</option>
-              <option value="OHR001">熱海・伊豆山 佳ら久</option>
-              <option value="OHR002">箱根・強羅 佳ら久</option>
-              <option value="OHR003">クロスホテル札幌</option>
-              <option value="OHR004">箱根・芦ノ湖 はなをり</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>お部屋タイプ</label>
-          <div class="select-wrapper">
-            <select id="room_type">
-              <option value="">こだわらない</option>
-              <option value="STD">スタンダードルーム</option>
-              <option value="DLX">デラックスルーム</option>
-              <option value="STE">スイートルーム</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>チェックイン日<span class="required">*</span></label>
-          <input type="date" id="check_in_date" required>
-        </div>
-
-        <div class="form-group">
-          <label>お名前<span class="required">*</span></label>
-          <input type="text" id="user_name" placeholder="例：山田 太郎" required>
-        </div>
-
-        <div class="form-group">
-          <label>LINE ID<span class="required">*</span></label>
-          <input type="text" id="line_id" placeholder="例：yamada_taro" required>
-        </div>
-
-        <button type="submit" class="btn-submit" id="submitBtn">登録する</button>
-      </form>
+    <!-- 完了 -->
+    <div class="modal-success" id="modalSuccess">
+      <div class="icon">✅</div>
+      <p id="modalSuccessMsg">登録が完了しました。<br>空室が発生した際にLINEでご連絡します。</p>
+      <button class="cancel-btn" onclick="closeModal()">閉じる</button>
     </div>
   </div>
-
-  <!-- 完了画面 -->
-  <div class="success-screen" id="successArea">
-    <div class="icon">✅</div>
-    <h3>登録が完了しました</h3>
-    <p id="successMsg">空室が発生した際に、LINEにてご連絡いたします。<br>しばらくお待ちください。</p>
-    <a class="btn-back" onclick="resetForm()">別の日程も登録する</a>
-  </div>
-
 </div>
 
-<footer>© ORIX Hotels &amp; Resorts — パイロット版</footer>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script>
-  let currentTab = 'vacancy';
+const DAYS_JA = ["日","月","火","水","木","金","土"];
 
-  const hotelNames = {
-    'OHR001': '熱海・伊豆山 佳ら久',
-    'OHR002': '箱根・強羅 佳ら久',
-    'OHR003': 'クロスホテル札幌',
-    'OHR004': '箱根・芦ノ湖 はなをり'
-  };
+// 実際のホテルデータ
+const hotels = [
+  { area:"関東エリア", brand:"佳ら久",   id:"OHR001", name:"熱海・伊豆山 佳ら久" },
+  { area:"関東エリア", brand:"佳ら久",   id:"OHR002", name:"箱根・強羅 佳ら久" },
+  { area:"関東エリア", brand:"はなをり", id:"OHR004", name:"箱根・芦ノ湖 はなをり" },
+  { area:"北海道エリア", brand:"CROSS HOTEL", id:"OHR003", name:"クロスホテル札幌" },
+];
 
-  function switchTab(tab) {
-    currentTab = tab;
-    document.querySelectorAll('.tab').forEach((el, i) => {
-      el.classList.toggle('active', (tab === 'vacancy' && i === 0) || (tab === 'cancel' && i === 1));
+let currentStartDate = new Date();
+currentStartDate.setHours(0,0,0,0);
+
+// APIから取得した在庫データ: { "OHR001_2026-07-18": 3, ... }
+let roomStock = {};
+
+function addDays(date, n) {
+  const d = new Date(date); d.setDate(d.getDate() + n); return d;
+}
+function toISODate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+function formatLabel(date) {
+  return `${String(date.getMonth()+1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')}(${DAYS_JA[date.getDay()]})`;
+}
+function buildDates(startDate) {
+  return Array.from({length:7}, (_, i) => addDays(startDate, i));
+}
+
+// APIから在庫取得（表示中の7日分）
+async function fetchRooms(dates) {
+  try {
+    const from = toISODate(dates[0]);
+    const to   = toISODate(dates[6]);
+    const res  = await fetch(`/api/rooms?from=${from}&to=${to}`);
+    const rows = await res.json();
+    roomStock = {};
+    rows.forEach(r => {
+      const key = `${r.hotel_id}_${r.check_in_date}`;
+      roomStock[key] = (roomStock[key] || 0) + r.available_rooms;
     });
-    document.getElementById('formTitle').textContent =
-      tab === 'vacancy' ? '空室待ち 登録' : 'キャンセル待ち 登録';
-    document.getElementById('successMsg').textContent =
-      tab === 'vacancy'
-        ? '空室が発生した際に、LINEにてご連絡いたします。\nしばらくお待ちください。'
-        : 'キャンセルが発生した際に、LINEにてご連絡いたします。\nしばらくお待ちください。';
+  } catch(e) {
+    console.warn("API取得エラー", e);
   }
+}
 
-  function updateHotelName() {}
+function buildHead(dates) {
+  let html = `<tr><th class="hotel-col">施設名</th>`;
+  dates.forEach(d => {
+    const cls = d.getDay() === 6 ? ' class="sat"' : d.getDay() === 0 ? ' class="sun"' : '';
+    html += `<th${cls}>${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}<br><small>${DAYS_JA[d.getDay()]}</small></th>`;
+  });
+  html += `</tr>`;
+  document.getElementById("tableHead").innerHTML = html;
+}
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.textContent = '送信中...';
+function buildBody(dates) {
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+  let lastArea = "";
+  const lineIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 5.92 2 10.8c0 2.94 1.6 5.55 4.1 7.24-.18.65-.65 2.35-.74 2.72-.12.44.16.44.34.32.14-.09 2.23-1.5 3.13-2.12.38.05.77.08 1.17.08 5.52 0 10-3.92 10-8.8S17.52 2 12 2z"/></svg>`;
 
-    const hotel_id = document.getElementById('hotel_id').value;
-    const data = {
-      hotel_id,
-      hotel_name: hotelNames[hotel_id] || '',
-      room_type: document.getElementById('room_type').value,
-      check_in_date: document.getElementById('check_in_date').value,
-      user_name: document.getElementById('user_name').value.trim(),
-      line_id: document.getElementById('line_id').value.trim()
-    };
-
-    try {
-      const endpoint = currentTab === 'vacancy'
-        ? '/api/waitlist/vacancy'
-        : '/api/waitlist/cancel';
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || '送信に失敗しました');
-      }
-
-      document.getElementById('formArea').style.display = 'none';
-      document.getElementById('successArea').style.display = 'block';
-
-    } catch (err) {
-      alert('エラー: ' + err.message);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = '登録する';
+  hotels.forEach(hotel => {
+    if (hotel.area !== lastArea) {
+      tbody.innerHTML += `<tr class="area-row"><td colspan="8">${hotel.area}</td></tr>`;
+      lastArea = hotel.area;
     }
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="hotel-info">
+        <div class="hotel-area">${hotel.area}</div>
+        <div><span class="hotel-brand">${hotel.brand}</span></div>
+        <div class="hotel-name">${hotel.name}</div>
+      </td>`;
+
+    dates.forEach(date => {
+      const td = document.createElement("td");
+      const dateStr = toISODate(date);
+      const label = formatLabel(date);
+      const key = `${hotel.id}_${dateStr}`;
+      const avail = roomStock[key];
+
+      if (avail === undefined) {
+        // APIデータなし（対象外日付）
+        td.innerHTML = `<span style="color:#ccc">—</span>`;
+      } else if (avail > 0) {
+        // 空室あり
+        td.innerHTML = `<a class="avail-link" href="#">残り${avail}室</a>`;
+      } else {
+        // 満室 → 空室待ち / キャンセル待ちボタン
+        td.className = "soldout-cell";
+        td.innerHTML = `
+          <div class="sold-mark">✕</div>
+          <button class="line-waitlist-btn" onclick="openModal('${hotel.id}','${hotel.name}','${label}','${dateStr}','cancel')">
+            ${lineIcon}キャンセル待ち
+          </button>`;
+      }
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+function updatePeriodLabel(dates) {
+  document.getElementById("periodLabel").textContent =
+    `${dates[0].getFullYear()} ${formatLabel(dates[0])} 〜 ${formatLabel(dates[6])}`;
+}
+
+async function render() {
+  const dates = buildDates(currentStartDate);
+  buildHead(dates);
+  // ローディング表示
+  document.getElementById("tableBody").innerHTML =
+    `<tr><td colspan="8" class="loading-cell" style="padding:20px;text-align:center">読み込み中...</td></tr>`;
+  updatePeriodLabel(dates);
+  document.getElementById("checkinInput").value = toISODate(currentStartDate);
+  await fetchRooms(dates);
+  buildBody(dates);
+}
+
+function onSearch() {
+  const val = document.getElementById("checkinInput").value;
+  if (val) { currentStartDate = new Date(val + "T00:00:00"); render(); }
+}
+function shiftDays(n) {
+  currentStartDate = addDays(currentStartDate, n);
+  render();
+}
+document.getElementById("checkinInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") onSearch();
+});
+
+// ===== モーダル =====
+let modalHotelId = "", modalHotelName = "", modalDateStr = "", modalType = "cancel";
+
+function openModal(hotelId, hotelName, label, dateStr, type) {
+  modalHotelId   = hotelId;
+  modalHotelName = hotelName;
+  modalDateStr   = dateStr;
+  modalType      = type;
+
+  document.getElementById("modalTitle").textContent =
+    type === "vacancy" ? "受付開始を通知する" : "空室待ちに登録する";
+  document.getElementById("modalDetail").innerHTML =
+    `<strong>${hotelName}</strong><br>チェックイン: ${label}`;
+  document.getElementById("modalSubmitText").textContent =
+    type === "vacancy" ? "受付開始通知を登録" : "LINEで空室待ち登録";
+
+  // フォームリセット
+  document.getElementById("modalName").value = "";
+  document.getElementById("modalLineId").value = "";
+  document.getElementById("modalFormArea").style.display = "block";
+  document.getElementById("modalSuccess").style.display = "none";
+  document.getElementById("modalSubmitBtn").disabled = false;
+
+  document.getElementById("modalOverlay").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("modalOverlay").classList.remove("open");
+}
+document.getElementById("modalOverlay").addEventListener("click", function(e) {
+  if (e.target === this) closeModal();
+});
+
+async function submitWaitlist() {
+  const name   = document.getElementById("modalName").value.trim();
+  const lineId = document.getElementById("modalLineId").value.trim();
+  if (!name || !lineId) {
+    alert("お名前とLINE IDを入力してください");
+    return;
   }
 
-  function resetForm() {
-    document.getElementById('registerForm').reset();
-    document.getElementById('formArea').style.display = 'block';
-    document.getElementById('successArea').style.display = 'none';
-  }
+  const btn = document.getElementById("modalSubmitBtn");
+  btn.disabled = true;
+  document.getElementById("modalSubmitText").textContent = "送信中...";
 
-  // 今日以降の日付のみ選択可
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('check_in_date').min = today;
+  const endpoint = modalType === "vacancy"
+    ? "/api/waitlist/vacancy"
+    : "/api/waitlist/cancel";
+
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        hotel_id:      modalHotelId,
+        hotel_name:    modalHotelName,
+        room_type:     "",
+        check_in_date: modalDateStr,
+        user_name:     name,
+        line_id:       lineId
+      })
+    });
+    if (!res.ok) throw new Error("送信に失敗しました");
+
+    document.getElementById("modalFormArea").style.display = "none";
+    document.getElementById("modalSuccess").style.display = "block";
+    document.getElementById("modalSuccessMsg").innerHTML =
+      modalType === "vacancy"
+        ? "登録が完了しました。<br>受付開始時にLINEでご連絡します。"
+        : "登録が完了しました。<br>空室が発生した際にLINEでご連絡します。";
+
+    showToast("登録が完了しました ✅");
+  } catch(e) {
+    alert("エラー: " + e.message);
+    btn.disabled = false;
+    document.getElementById("modalSubmitText").textContent =
+      modalType === "vacancy" ? "受付開始通知を登録" : "LINEで空室待ち登録";
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+// 初期描画
+render();
 </script>
 </body>
 </html>

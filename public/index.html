@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>空室・キャンセル待ち登録 | ORIX Hotels & Resorts</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+      background: #f5f5f0;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1a1a;
+      color: #fff;
+      padding: 16px 20px;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      opacity: 0.7;
+    }
+    header .brand {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #3cb371 0%, #2a8a55 100%);
+      color: #fff;
+      padding: 32px 20px;
+      text-align: center;
+    }
+    .hero h2 {
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+    .hero p {
+      font-size: 13px;
+      margin-top: 8px;
+      opacity: 0.9;
+      line-height: 1.7;
+    }
+
+    .tabs {
+      display: flex;
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .tab {
+      flex: 1;
+      padding: 14px 8px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #888;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      color: #3cb371;
+      border-bottom-color: #3cb371;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .section-title {
+      font-size: 12px;
+      color: #3cb371;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    label .required {
+      color: #e53e3e;
+      margin-left: 4px;
+    }
+    select, input[type="text"], input[type="date"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      color: #333;
+      background: #fafafa;
+      appearance: none;
+      -webkit-appearance: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    select:focus, input:focus {
+      border-color: #3cb371;
+      background: #fff;
+    }
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: '▾';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+      pointer-events: none;
+    }
+
+    .notice {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #166534;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+    .notice strong { display: block; margin-bottom: 4px; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: #3cb371;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: background 0.2s;
+    }
+    .btn-submit:hover { background: #2fa362; }
+    .btn-submit:active { background: #26865a; }
+    .btn-submit:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* 完了画面 */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .success-screen .icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+    .success-screen h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #3cb371;
+      margin-bottom: 12px;
+    }
+    .success-screen p {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.7;
+    }
+    .btn-back {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 12px 28px;
+      background: #f0fdf4;
+      color: #3cb371;
+      border: 1px solid #3cb371;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 11px;
+      color: #aaa;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">ORIX Hotels &amp; Resorts</div>
+  <h1>空室・キャンセル待ち 登録フォーム</h1>
+</header>
+
+<div class="hero">
+  <h2>ご希望のお部屋が<br>空いたらLINEでお知らせします</h2>
+  <p>お名前とLINE IDをご登録ください。<br>空室発生時に担当者よりご連絡いたします。</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('vacancy')">空室待ち</div>
+  <div class="tab" onclick="switchTab('cancel')">キャンセル待ち</div>
+</div>
+
+<div class="container">
+
+  <!-- 登録フォーム -->
+  <div id="formArea">
+    <div class="card">
+      <div class="section-title" id="formTitle">空室待ち 登録</div>
+
+      <div class="notice">
+        <strong>📌 ご注意</strong>
+        空室が発生した場合、ご登録のLINEアカウントへご連絡します。ご連絡後24時間以内にご予約の確定をお願いいたします。
+      </div>
+
+      <form id="registerForm" onsubmit="handleSubmit(event)">
+
+        <div class="form-group">
+          <label>ホテル<span class="required">*</span></label>
+          <div class="select-wrapper">
+            <select id="hotel_id" required onchange="updateHotelName()">
+              <option value="">選択してください</option>
+              <option value="OHR001">熱海・伊豆山 佳ら久</option>
+              <option value="OHR002">箱根・強羅 佳ら久</option>
+              <option value="OHR003">クロスホテル札幌</option>
+              <option value="OHR004">箱根・芦ノ湖 はなをり</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>お部屋タイプ</label>
+          <div class="select-wrapper">
+            <select id="room_type">
+              <option value="">こだわらない</option>
+              <option value="STD">スタンダードルーム</option>
+              <option value="DLX">デラックスルーム</option>
+              <option value="STE">スイートルーム</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>チェックイン日<span class="required">*</span></label>
+          <input type="date" id="check_in_date" required>
+        </div>
+
+        <div class="form-group">
+          <label>お名前<span class="required">*</span></label>
+          <input type="text" id="user_name" placeholder="例：山田 太郎" required>
+        </div>
+
+        <div class="form-group">
+          <label>LINE ID<span class="required">*</span></label>
+          <input type="text" id="line_id" placeholder="例：yamada_taro" required>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">登録する</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 完了画面 -->
+  <div class="success-screen" id="successArea">
+    <div class="icon">✅</div>
+    <h3>登録が完了しました</h3>
+    <p id="successMsg">空室が発生した際に、LINEにてご連絡いたします。<br>しばらくお待ちください。</p>
+    <a class="btn-back" onclick="resetForm()">別の日程も登録する</a>
+  </div>
+
+</div>
+
+<footer>© ORIX Hotels &amp; Resorts — パイロット版</footer>
+
+<script>
+  let currentTab = 'vacancy';
+
+  const hotelNames = {
+    'OHR001': '熱海・伊豆山 佳ら久',
+    'OHR002': '箱根・強羅 佳ら久',
+    'OHR003': 'クロスホテル札幌',
+    'OHR004': '箱根・芦ノ湖 はなをり'
+  };
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach((el, i) => {
+      el.classList.toggle('active', (tab === 'vacancy' && i === 0) || (tab === 'cancel' && i === 1));
+    });
+    document.getElementById('formTitle').textContent =
+      tab === 'vacancy' ? '空室待ち 登録' : 'キャンセル待ち 登録';
+    document.getElementById('successMsg').textContent =
+      tab === 'vacancy'
+        ? '空室が発生した際に、LINEにてご連絡いたします。\nしばらくお待ちください。'
+        : 'キャンセルが発生した際に、LINEにてご連絡いたします。\nしばらくお待ちください。';
+  }
+
+  function updateHotelName() {}
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '送信中...';
+
+    const hotel_id = document.getElementById('hotel_id').value;
+    const data = {
+      hotel_id,
+      hotel_name: hotelNames[hotel_id] || '',
+      room_type: document.getElementById('room_type').value,
+      check_in_date: document.getElementById('check_in_date').value,
+      user_name: document.getElementById('user_name').value.trim(),
+      line_id: document.getElementById('line_id').value.trim()
+    };
+
+    try {
+      const endpoint = currentTab === 'vacancy'
+        ? '/api/waitlist/vacancy'
+        : '/api/waitlist/cancel';
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || '送信に失敗しました');
+      }
+
+      document.getElementById('formArea').style.display = 'none';
+      document.getElementById('successArea').style.display = 'block';
+
+    } catch (err) {
+      alert('エラー: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '登録する';
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('registerForm').reset();
+    document.getElementById('formArea').style.display = 'block';
+    document.getElementById('successArea').style.display = 'none';
+  }
+
+  // 今日以降の日付のみ選択可
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('check_in_date').min = today;
+</script>
+</body>
+</html>

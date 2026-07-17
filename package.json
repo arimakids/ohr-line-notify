@@ -1,7 +1,7 @@
 {
   "name": "ohr-line-notify",
   "version": "1.0.0",
-  "description": "ORIX Hotels & Resorts LINE通知管理システム",
+  "description": "FANTIC HOTELS LINE通知管理システム",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

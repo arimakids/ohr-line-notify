@@ -20,6 +20,7 @@ app.use('/api/waitlist', require('./routes/waitlist')(db));
 app.use('/api/notify',   require('./routes/notify')(db));
 app.use('/api/batch',    require('./routes/batch')(db));
 app.use('/api/settings', require('./routes/settings')(db));
+app.use('/auth',         require('./routes/auth')(db));
 
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));

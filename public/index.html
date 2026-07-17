@@ -151,28 +151,16 @@
     <h3 id="modalTitle">空室待ちに登録する</h3>
     <div class="hotel-detail" id="modalDetail"></div>
 
-    <!-- 入力フォーム -->
+    <!-- LINEログインボタン -->
     <div id="modalFormArea">
-      <div class="modal-form-group">
-        <label>お名前<span style="color:#e53e3e">*</span></label>
-        <input type="text" id="modalName" placeholder="例：山田 太郎">
-      </div>
-      <div class="modal-form-group">
-        <label>LINE ID<span style="color:#e53e3e">*</span></label>
-        <input type="text" id="modalLineId" placeholder="例：yamada_taro">
-      </div>
-      <button class="modal-submit-btn" id="modalSubmitBtn" onclick="submitWaitlist()">
+      <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.6;">
+        LINEアカウントで登録します。<br>空室・キャンセルが発生した際に<br>LINEでお知らせします。
+      </p>
+      <button class="modal-submit-btn" id="modalSubmitBtn" onclick="goLineLogin()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 5.92 2 10.8c0 2.94 1.6 5.55 4.1 7.24-.18.65-.65 2.35-.74 2.72-.12.44.16.44.34.32.14-.09 2.23-1.5 3.13-2.12.38.05.77.08 1.17.08 5.52 0 10-3.92 10-8.8S17.52 2 12 2z"/></svg>
-        <span id="modalSubmitText">LINEで空室待ち登録</span>
+        <span id="modalSubmitText">LINEでログインして登録</span>
       </button>
       <button class="cancel-btn" onclick="closeModal()">キャンセル</button>
-    </div>
-
-    <!-- 完了 -->
-    <div class="modal-success" id="modalSuccess">
-      <div class="icon">✅</div>
-      <p id="modalSuccessMsg">登録が完了しました。<br>空室が発生した際にLINEでご連絡します。</p>
-      <button class="cancel-btn" onclick="closeModal()">閉じる</button>
     </div>
   </div>
 </div>
@@ -183,12 +171,12 @@
 <script>
 const DAYS_JA = ["日","月","火","水","木","金","土"];
 
-// 実際のホテルデータ
+// ホテルデータ
 const hotels = [
-  { area:"関東エリア", brand:"佳ら久",        id:"OHR001", name:"熱海・伊豆山 佳ら久" },
-  { area:"関東エリア", brand:"佳ら久",        id:"OHR002", name:"箱根・強羅 佳ら久" },
-  { area:"関東エリア", brand:"はなをり",      id:"OHR004", name:"箱根・芦ノ湖 はなをり" },
-  { area:"北海道エリア", brand:"CROSS HOTEL", id:"OHR003", name:"クロスホテル札幌" },
+  { area:"関東エリア",   brand:"FANTIC", id:"OHR001", name:"FANTIC HOTEL 熱海" },
+  { area:"関東エリア",   brand:"FANTIC", id:"OHR002", name:"FANTIC HOTEL 箱根" },
+  { area:"北海道エリア", brand:"FANTIC", id:"OHR003", name:"FANTIC HOTEL 札幌" },
+  { area:"沖縄エリア",   brand:"FANTIC", id:"OHR004", name:"FANTIC HOTEL 沖縄" },
 ];
 
 // 6ヶ月後の日付（受付前ライン）
@@ -347,20 +335,22 @@ function openModal(hotelId, hotelName, label, dateStr, type) {
   modalDateStr   = dateStr;
   modalType      = type;
 
-  const titles    = { preopen:"受付開始を通知する", cancel:"キャンセル待ちに登録する", vacancy:"空室待ちに登録する" };
-  const btnLabels = { preopen:"受付開始通知を登録する", cancel:"LINEでキャンセル待ち登録", vacancy:"LINEで空室待ち登録" };
+  const titles = {
+    preopen: "空室待ちに登録する",
+    cancel:  "キャンセル待ちに登録する",
+    vacancy: "空室待ちに登録する",
+  };
+  const btnLabels = {
+    preopen: "LINEでログインして登録",
+    cancel:  "LINEでログインして登録",
+    vacancy: "LINEでログインして登録",
+  };
   document.getElementById("modalTitle").textContent = titles[type] || "空室待ちに登録する";
   document.getElementById("modalDetail").innerHTML =
     `<strong>${hotelName}</strong><br>チェックイン: ${label}`;
-  document.getElementById("modalSubmitText").textContent = btnLabels[type] || "LINEで登録";
-
-  // フォームリセット
-  document.getElementById("modalName").value = "";
-  document.getElementById("modalLineId").value = "";
+  document.getElementById("modalSubmitText").textContent = btnLabels[type];
   document.getElementById("modalFormArea").style.display = "block";
-  document.getElementById("modalSuccess").style.display = "none";
   document.getElementById("modalSubmitBtn").disabled = false;
-
   document.getElementById("modalOverlay").classList.add("open");
 }
 
@@ -371,52 +361,15 @@ document.getElementById("modalOverlay").addEventListener("click", function(e) {
   if (e.target === this) closeModal();
 });
 
-async function submitWaitlist() {
-  const name   = document.getElementById("modalName").value.trim();
-  const lineId = document.getElementById("modalLineId").value.trim();
-  if (!name || !lineId) {
-    alert("お名前とLINE IDを入力してください");
-    return;
-  }
-
-  const btn = document.getElementById("modalSubmitBtn");
-  btn.disabled = true;
-  document.getElementById("modalSubmitText").textContent = "送信中...";
-
-  // preopen（受付前）と vacancy は両方 vacancy_waitlist へ登録
-  const endpoint = modalType === "cancel"
-    ? "/api/waitlist/cancel"
-    : "/api/waitlist/vacancy";
-
-  try {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        hotel_id:      modalHotelId,
-        hotel_name:    modalHotelName,
-        room_type:     "",
-        check_in_date: modalDateStr,
-        user_name:     name,
-        line_id:       lineId
-      })
-    });
-    if (!res.ok) throw new Error("送信に失敗しました");
-
-    document.getElementById("modalFormArea").style.display = "none";
-    document.getElementById("modalSuccess").style.display = "block";
-    document.getElementById("modalSuccessMsg").innerHTML =
-      modalType === "vacancy"
-        ? "登録が完了しました。<br>受付開始時にLINEでご連絡します。"
-        : "登録が完了しました。<br>空室が発生した際にLINEでご連絡します。";
-
-    showToast("登録が完了しました ✅");
-  } catch(e) {
-    alert("エラー: " + e.message);
-    btn.disabled = false;
-    document.getElementById("modalSubmitText").textContent =
-      modalType === "vacancy" ? "受付開始通知を登録" : "LINEで空室待ち登録";
-  }
+// LINE Loginページへリダイレクト
+function goLineLogin() {
+  const params = new URLSearchParams({
+    type:      modalType,
+    hotelId:   modalHotelId,
+    hotelName: modalHotelName,
+    date:      modalDateStr,
+  });
+  location.href = `/auth/line?${params}`;
 }
 
 function showToast(msg) {
